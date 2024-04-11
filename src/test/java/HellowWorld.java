@@ -59,4 +59,54 @@ public class HellowWorld {
         System.out.println("Редирект на  - " + mmm1);
     }
 
+    @Test
+    public void helloWorld4() {
+
+        Response response = RestAssured
+                .given()
+                .redirects()
+                .follow(false)
+                .when()
+                .get("https://playground.learnqa.ru/api/long_redirect")
+                .andReturn();
+        response.prettyPrint();
+
+        Headers mmm = response.getHeaders();
+        System.out.println("Заголовки - " + mmm);
+
+        String mmm1 = response.getHeader("Location");
+        System.out.println("Редирект на  - " + mmm1);
+
+        Response response1 = RestAssured
+                .given()
+                .redirects()
+                .follow(false)
+                .when()
+                .get(mmm1)
+                .andReturn();
+        response1.prettyPrint();
+
+        Headers mmm2 = response1.getHeaders();
+        System.out.println("Заголовки - " + mmm2);
+
+        String mmm3 = response1.getHeader("Location");
+        System.out.println("Редирект на  - " + mmm3);
+
+
+        Response response2 = RestAssured
+                .given()
+                .redirects()
+                .follow(false)
+                .when()
+                .get(mmm3)
+                .andReturn();
+        response2.prettyPrint();
+
+        Headers mmm4 = response2.getHeaders();
+        System.out.println("Заголовки - " + mmm4);
+
+        String mmm5 = response2.getHeader("Location");
+        System.out.println("Редирект на  - " + mmm5);
+    }
+
 }
