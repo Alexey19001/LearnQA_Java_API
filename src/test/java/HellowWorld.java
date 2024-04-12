@@ -11,6 +11,9 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
+import static java.lang.Thread.sleep;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 public class HellowWorld {
 
@@ -53,60 +56,57 @@ public class HellowWorld {
         response.prettyPrint();
 
         Headers mmm = response.getHeaders();
-        System.out.println("Заголовки - " + mmm);
+        System.out.println("\nЗаголовки - \n" + mmm);
 
         String mmm1 = response.getHeader("Location");
-        System.out.println("Редирект на  - " + mmm1);
+        System.out.println("\nРедирект на  - " + mmm1);
     }
 
     @Test
-    public void helloWorld4() {
+    public void helloWorld4() throws InterruptedException {
 
         Response response = RestAssured
                 .given()
                 .redirects()
                 .follow(false)
                 .when()
-                .get("https://playground.learnqa.ru/api/long_redirect")
+                .get("https://playground.learnqa.ru/ajax/api/longtime_job")
                 .andReturn();
-        response.prettyPrint();
+        String accessToken = response.jsonPath().getString("token");
+        System.out.println("Токен доступа - " + accessToken);
 
-        Headers mmm = response.getHeaders();
-        System.out.println("Заголовки - " + mmm);
-
-        String mmm1 = response.getHeader("Location");
-        System.out.println("Редирект на  - " + mmm1);
-
-        Response response1 = RestAssured
+        // Шаг 2: запрос с токеном до завершения задачи
+        Response responseWithTokenBeforeCompletion = RestAssured
                 .given()
-                .redirects()
-                .follow(false)
+                .queryParam("token", accessToken)
                 .when()
-                .get(mmm1)
+                .get("https://playground.learnqa.ru/ajax/api/longtime_job")
                 .andReturn();
-        response1.prettyPrint();
+        String statusBefore = responseWithTokenBeforeCompletion.jsonPath().getString("status");
+        System.out.println("Статус до завершения задачи - " + statusBefore);
 
-        Headers mmm2 = response1.getHeaders();
-        System.out.println("Заголовки - " + mmm2);
+        // Шаг 3: ожидание нужного количества секунд
+       int secondsToWait = response.jsonPath().getInt("seconds");
+        // Переводим секунды в миллисекунды
+       Thread.sleep(secondsToWait * 1000);
 
-        String mmm3 = response1.getHeader("Location");
-        System.out.println("Редирект на  - " + mmm3);
 
-
-        Response response2 = RestAssured
+        // Шаг 4: запрос с токеном после завершения задачи
+        Response responseWithTokenAfterCompletion = RestAssured
                 .given()
-                .redirects()
-                .follow(false)
+                .queryParam("token", accessToken)
                 .when()
-                .get(mmm3)
+                .get("https://playground.learnqa.ru/ajax/api/longtime_job")
                 .andReturn();
-        response2.prettyPrint();
+        String statusAfter = responseWithTokenAfterCompletion.jsonPath().getString("status");
+        System.out.println("Статус после завершения задачи - " + statusAfter);
 
-        Headers mmm4 = response2.getHeaders();
-        System.out.println("Заголовки - " + mmm4);
-
-        String mmm5 = response2.getHeader("Location");
-        System.out.println("Редирект на  - " + mmm5);
+        // Проверка наличия результата после завершения задачи
+        String result = responseWithTokenAfterCompletion.jsonPath().getString("result");
+        if (result != null) {
+            System.out.println("Результат: " + result);
+        } else {
+            System.out.println("Результат еще не готов.");
+        }
     }
-
 }
