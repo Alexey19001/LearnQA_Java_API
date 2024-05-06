@@ -15,6 +15,7 @@ import static io.restassured.RestAssured.given;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HellowWorld {
 
@@ -217,7 +218,56 @@ public class HellowWorld {
         return response.getBody().asString();
 
     }
+
+    @Test
+    public void testLongRedirect() {
+        RestAssured.baseURI = "https://playground.learnqa.ru/api";
+
+        String currentUrl = "/long_redirect";
+        int redirectCount = 0;
+
+        while (true) {
+            Response response = given().get(currentUrl);
+            redirectCount++;
+
+            int statusCode = response.getStatusCode();
+            if (statusCode == 200) {
+                System.out.println("Достигнут последний УРЛ: " + currentUrl);
+                break;
+            }
+
+            currentUrl = response.getHeader("Location");
+            System.out.println("Ридирект на...: " + currentUrl);
+        }
+
+        System.out.println("Количество ридеректов: " + redirectCount);
+    }
+
+
+    @Test
+    public void testCountRedirects() {
+        String url = "https://playground.learnqa.ru/api/long_redirect";
+        int redurects = 0;
+        while (true) {
+            Response response = RestAssured
+                    .given()
+                    .redirects()
+                    .follow(false)
+                    .when()
+                    .get(url)
+                    .andReturn();
+            redurects++;
+            int statusCode = response.getStatusCode();
+            if (statusCode == 301 || statusCode == 302 || statusCode == 303) {
+                url = response.getHeader("Location");
+            } else if (statusCode == 200) {
+                System.out.println("Количество редиректов: " + redurects);
+                break;
+            }
+        }
+    }
 }
+
 
 
 
